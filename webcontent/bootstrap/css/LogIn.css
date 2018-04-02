@@ -1,0 +1,16 @@
+@CHARSET "ISO-8859-1";
+body{
+	 background-image: url("../img/plain-blue.jpg");
+	 width: 100%;
+	 height: 100px;
+}
+.jumbotron{
+	border: 1px solid #fff;
+	padding: 50px 60px;
+	-webkit-box-shadow: -1px 4px 26px 11px rgba(0,0,0,0,75);
+	-moz-box-shadow: -1px 4px 26px 11px rgba(0,0,0,0,75);
+	box-shadow: -1px 4px 26px 11px rgba(0,0,0,0,75);
+}
+.pull-right{
+	margin-top: 50px;
+}
