@@ -1,14 +1,17 @@
 package DepartmentLibrary.servlet;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.List;
 
-import javax.servlet.ServletConfig;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 
 @WebServlet("/AddItems")
 public class AddItems extends HttpServlet {
@@ -66,36 +69,124 @@ public class AddItems extends HttpServlet {
 	@SuppressWarnings("unchecked")
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// get the user input
 		Integer numOfCopies = Integer.parseInt(request.getParameter("numOfCopies"));
-		if (numOfCopies > 1) {
-			for (int x = 0; x < numOfCopies; x++) {
-				String type = request.getParameter("type");
-				String name = request.getParameter("name");
-				String additionalInfo = request.getParameter("additionalInfo");
-				
-				// create a new guest book entry
-				DepartmentLibraryEntry entry = new DepartmentLibraryEntry(idSeed++, type, name, additionalInfo, "Yes");
+		if(numOfCopies == 1){
+		Connection c = null;
+        try
+        {
+            String url = "jdbc:mysql://cs3.calstatela.edu/cs3220stu15";
+            String username = "cs3220stu15";
+            String password = "thfs30eq";
 
-				// add the new entry to the guest book
-				List<DepartmentLibraryEntry> libEntries = (List<DepartmentLibraryEntry>) getServletContext().getAttribute("libEntries");
-				libEntries.add(entry);
+            String sql = "insert into departmentlibrary (id, type, name, additionalInfo, available) values (?, ?, ?, ?, ?)";
+
+            c = (Connection) DriverManager.getConnection( url, username, password );
+            PreparedStatement pstmt = c.prepareStatement( sql );
+            pstmt.setString( 1, request.getParameter( "id" ) );
+            pstmt.setString( 2, request.getParameter( "type" ) );
+            pstmt.setString( 3, request.getParameter( "name" ) );
+            pstmt.setString( 4, request.getParameter( "additionalInfo" ) );
+            pstmt.setString( 5, request.getParameter( "available" ) );
+            pstmt.executeUpdate();
+            c.close();
+        }
+        catch( SQLException e )
+        {
+            throw new ServletException( e );
+        }
+        finally
+        {
+            try
+            {
+                if( c != null ) c.close();
+            }
+            catch( SQLException e )
+            {
+                throw new ServletException( e );
+            }
+        }
+		} else if (numOfCopies > 1){
+				Connection c = null;
+		        try
+		        {
+		            String url = "jdbc:mysql://cs3.calstatela.edu/cs3220stu15";
+		            String username = "cs3220stu15";
+		            String password = "thfs30eq";
+		            for (int x = 0; x < numOfCopies; x++){
+		            String sql = "insert into departmentlibrary (id, type, name, additionalInfo, available) values (?, ?, ?, ?, ?)";
+
+		            c = (Connection) DriverManager.getConnection( url, username, password );
+		            PreparedStatement pstmt = c.prepareStatement( sql );
+		            pstmt.setString( 1, request.getParameter( "id" ) );
+		            pstmt.setString( 2, request.getParameter( "type" ) );
+		            pstmt.setString( 3, request.getParameter( "name" ) );
+		            pstmt.setString( 4, request.getParameter( "additionalInfo" ) );
+		            pstmt.setString( 5, request.getParameter( "available" ) );
+		            pstmt.executeUpdate();
+		            c.close();
+		            }
+		        }
+		     
+		        catch( SQLException e )
+		        {
+		            throw new ServletException( e );
+		        }
+		        finally
+		        {
+		            try
+		            {
+		                if( c != null ) c.close();
+		            }
+		            catch( SQLException e )
+		            {
+		                throw new ServletException( e );
+		            }
 			}
-		} else if (numOfCopies == 1) {
-			String type = request.getParameter("type");
-			String name = request.getParameter("name");
-			String additionalInfo = request.getParameter("additionalInfo");
-			
-			// create a new guest book entry
-			DepartmentLibraryEntry entry = new DepartmentLibraryEntry(idSeed++, type, name, additionalInfo, " ");
-			
-			// add the new entry to the guest book
-			List<DepartmentLibraryEntry> libEntries = (List<DepartmentLibraryEntry>) getServletContext().getAttribute("libEntries");
-			libEntries.add(entry);
-			
-		}
-		// send the user back to the guest book page
-		response.sendRedirect("DisplayItems");
+//				String type = request.getParameter("type");
+//				String name = request.getParameter("name");
+//				String additionalInfo = request.getParameter("additionalInfo");
+//				
+//				// create a new guest book entry
+//				DepartmentLibraryEntry entry = new DepartmentLibraryEntry(idSeed++, type, name, additionalInfo, "Yes");
+//
+//				// add the new entry to the guest book
+//				List<DepartmentLibraryEntry> libEntries = (List<DepartmentLibraryEntry>) getServletContext().getAttribute("libEntries");
+//				libEntries.add(entry);
+//			}
+
+        response.sendRedirect( "DisplayItems" );
+    }
+		// get the user input
+//		Integer numOfCopies = Integer.parseInt(request.getParameter("numOfCopies"));
+//		if (numOfCopies > 1) {
+//			for (int x = 0; x < numOfCopies; x++) {
+//				String type = request.getParameter("type");
+//				String name = request.getParameter("name");
+//				String additionalInfo = request.getParameter("additionalInfo");
+//				
+//				// create a new guest book entry
+//				DepartmentLibraryEntry entry = new DepartmentLibraryEntry(idSeed++, type, name, additionalInfo, "Yes");
+//
+//				// add the new entry to the guest book
+//				List<DepartmentLibraryEntry> libEntries = (List<DepartmentLibraryEntry>) getServletContext().getAttribute("libEntries");
+//				libEntries.add(entry);
+//			}
+//		} else if (numOfCopies == 1) {
+//			String type = request.getParameter("type");
+//			String name = request.getParameter("name");
+//			String additionalInfo = request.getParameter("additionalInfo");
+//			
+//			// create a new guest book entry
+//			DepartmentLibraryEntry entry = new DepartmentLibraryEntry(idSeed++, type, name, additionalInfo, " ");
+//			
+//			// add the new entry to the guest book
+//			List<DepartmentLibraryEntry> libEntries = (List<DepartmentLibraryEntry>) getServletContext().getAttribute("libEntries");
+//			libEntries.add(entry);
+//			
+//		}
+//		// send the user back to the guest book page
+//		response.sendRedirect("DisplayItems");
+	}
 	}
 	
-}
+

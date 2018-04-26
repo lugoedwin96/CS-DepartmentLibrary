@@ -1,10 +1,13 @@
 package DepartmentLibrary.servlet;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,7 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(urlPatterns = "/DisplayItems", loadOnStartup = 2)
+@WebServlet(urlPatterns = "/DisplayItems", loadOnStartup = 1)
 public class DisplayItems extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
@@ -22,24 +25,54 @@ public class DisplayItems extends HttpServlet {
 
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-
-		// display test data
-		List<DepartmentLibraryEntry> libEntries = new ArrayList<DepartmentLibraryEntry>();
-		libEntries.add(new DepartmentLibraryEntry(1, "Tablet", "Samsung Galaxy Tab 10.1", "Android 3.0", "Yes"));
-		libEntries.add(new DepartmentLibraryEntry(2, "Book", "Cracking the Code Interview (6th Ed)", "2015", "No"));
-
-		// store data in scope to be accessed by this and any other servlet
-		getServletContext().setAttribute("libEntries", libEntries);
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+		} catch (ClassNotFoundException e) {
+			throw new ServletException(e);
+		}
 
 	}
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		if (request.getSession().getAttribute("user") == null) {
-			response.sendRedirect("LogIn");
-			return;
+
+		 if (request.getSession().getAttribute("user") == null) {
+		 response.sendRedirect("LogIn");
+		 return;
+		 }
+		 
+		List<DepartmentLibraryEntry> libEntries = new ArrayList<DepartmentLibraryEntry>();
+
+		Connection c = null;
+		try {
+			String url = "jdbc:mysql://cs3.calstatela.edu/cs3220stu15";
+			String username = "cs3220stu15";
+			String password = "thfs30eq";
+
+			c = DriverManager.getConnection(url, username, password);
+			Statement stmt = c.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from departmentlibrary");
+
+			while (rs.next())
+				libEntries.add(new DepartmentLibraryEntry(
+						rs.getInt("id"), 
+						rs.getString("type"), 
+						rs.getString("name"),
+						rs.getString("additionalInfo"), 
+						rs.getString("available")));
+			c.close();
+		} catch (SQLException e) {
+			throw new ServletException(e);
+		} finally {
+			try {
+				if (c != null)
+					c.close();
+			} catch (SQLException e) {
+				throw new ServletException(e);
+			}
 		}
 
+		request.setAttribute("libEntries", libEntries);
 		request.getRequestDispatcher("/WEB-INF/DisplayItems.jsp").forward(request, response);
 
 		// get the data

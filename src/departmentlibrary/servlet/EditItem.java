@@ -2,6 +2,13 @@ package DepartmentLibrary.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -19,11 +26,42 @@ public class EditItem extends HttpServlet {
         super();
     }
     
-   
-	@SuppressWarnings({ "unchecked" })
-	private DepartmentLibraryEntry getEntry( Integer id ){
-        List<DepartmentLibraryEntry> libEntries = (List<DepartmentLibraryEntry>) getServletContext().getAttribute("libEntries" );
+ 
+	private DepartmentLibraryEntry getEntry( Integer id ) throws ServletException{
+		
+		// get all the current entries from the database and get rid of the servlet context
+		 
+		List<DepartmentLibraryEntry> libEntries = new ArrayList<DepartmentLibraryEntry>();
 
+		Connection c = null;
+		try {
+			String url = "jdbc:mysql://cs3.calstatela.edu/cs3220stu15";
+			String username = "cs3220stu15";
+			String password = "thfs30eq";
+
+			c = DriverManager.getConnection(url, username, password);
+			Statement stmt = c.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from departmentlibrary where id = " + id);
+
+			while (rs.next())
+				libEntries.add(new DepartmentLibraryEntry(
+						rs.getInt("id"), 
+						rs.getString("type"), 
+						rs.getString("name"),
+						rs.getString("additionalInfo"), 
+						rs.getString("available")));
+			c.close();
+		} catch (SQLException e) {
+			throw new ServletException(e);
+		} finally {
+			try {
+				if (c != null)
+					c.close();
+			} catch (SQLException e) {
+				throw new ServletException(e);
+			}
+		}
+        
         for( DepartmentLibraryEntry entry : libEntries )
             if( entry.getId().equals( id ) ) 
             	return entry;
@@ -78,11 +116,46 @@ public class EditItem extends HttpServlet {
 	}
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Integer id = Integer.valueOf( request.getParameter( "id" ) );
+		
+		Integer id = Integer.valueOf( request.getParameter( "id" ) );
         DepartmentLibraryEntry entry = getEntry( id );
-        entry.setType(request.getParameter("type"));
-        entry.setName( request.getParameter( "name" ) );
-        entry.setAdditionalInfo( request.getParameter( "additionalInfo" ));
+        // instead of setVariable you need to update it on the database
+        Connection c = null;
+        try
+        {
+        	String url = "jdbc:mysql://cs3.calstatela.edu/cs3220stu15";
+			String username = "cs3220stu15";
+			String password = "thfs30eq";
+
+		    String sql = "update departmentlibrary set type=?, name=?, additionalInfo=? where id = "+id;
+
+            c = DriverManager.getConnection( url, username, password );
+          
+            PreparedStatement pstmt = c.prepareStatement( sql );
+            pstmt.setString( 1, request.getParameter( "type" ) );
+            pstmt.setString( 2, request.getParameter( "name" ) );
+            pstmt.setString( 3, request.getParameter( "additionalInfo" ) );
+            pstmt.executeUpdate();
+            c.close();
+        }
+        catch( SQLException e )
+        {
+            throw new ServletException( e );
+        }
+        finally
+        {
+            try
+            {
+                if( c != null ) c.close();
+            }
+            catch( SQLException e )
+            {
+                throw new ServletException( e );
+            }
+        }
+//        entry.setType(request.getParameter("type"));
+//        entry.setName( request.getParameter( "name" ) );
+//        entry.setAdditionalInfo( request.getParameter( "additionalInfo" ));
         
         response.sendRedirect( "DisplayItems" );
 	}
