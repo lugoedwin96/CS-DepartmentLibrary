@@ -26,7 +26,6 @@ public class EditItem extends HttpServlet {
         super();
     }
     
- 
 	private DepartmentLibraryEntry getEntry( Integer id ) throws ServletException{
 		
 		// get all the current entries from the database and get rid of the servlet context
@@ -79,8 +78,7 @@ public class EditItem extends HttpServlet {
         getServletContext().setAttribute("entry", entry);
 		request.getRequestDispatcher( "/WEB-INF/EditItem.jsp" ).forward( request, response );
 		 // get the entry to be edited
- 
-      
+		
         // form display
 //        response.setContentType( "text/html" );
 //        PrintWriter out = response.getWriter();
